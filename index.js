@@ -21,6 +21,8 @@ app.get('/', (req, res) => {
 const uri = `mongodb+srv://${process.env.USER_ID}:${process.env.USER_PASS}@cluster0.xihi8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 
+
+
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
@@ -30,11 +32,16 @@ const client = new MongoClient(uri, {
   }
 });
 
+
 async function run() {
   try {
 
     // await client.db("admin").command({ ping: 1 });
-    const coffeeCollection = client.db('insertDB').collection('coffees')
+    const coffeeCollection = client.db('insertDB').collection('coffees');
+    const usersCollection = client.db('insertDB').collection('users');
+
+
+
     app.get('/coffee', async (req, res) => {
       const cursor = coffeeCollection.find();
       const result = await cursor.toArray();
@@ -55,17 +62,17 @@ async function run() {
       res.send(result)
     })
 
-    app.put('/coffee/:id' ,async(req,res)=>{
+    app.put('/coffee/:id', async (req, res) => {
       const id = req.params.id;
       const updateCoffee = req.body;
-      const filter = { _id : new ObjectId(id)};
-      const options ={upsert : true};
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
       const coffee = {
-        $set:{
-          name:updateCoffee.name, chef:updateCoffee.chef, suplier:updateCoffee.suplier, test:updateCoffee.test, category:updateCoffee.category, details:updateCoffee.details, photo:updateCoffee.photo
+        $set: {
+          name: updateCoffee.name, chef: updateCoffee.chef, suplier: updateCoffee.suplier, test: updateCoffee.test, category: updateCoffee.category, details: updateCoffee.details, photo: updateCoffee.photo
         }
       }
-      const result = await coffeeCollection.updateOne(filter , coffee , options);
+      const result = await coffeeCollection.updateOne(filter, coffee, options);
       res.send(result)
     })
 
@@ -77,6 +84,28 @@ async function run() {
     })
 
 
+    // customize to users 
+
+
+    app.get('/users', async (req, res) => {
+      const cursor = usersCollection.find();
+      const result = await cursor.toArray();
+      res.send(result)
+    });
+
+
+    app.post('/users', async (req, res) => {
+      const users = req.body;
+      const result = await usersCollection.insertOne(users);
+      res.send(result)
+    });
+
+    app.delete('/users/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await usersCollection.deleteOne(query);
+      res.send(result)
+    });
 
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
