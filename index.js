@@ -107,6 +107,18 @@ async function run() {
       res.send(result)
     });
 
+
+    app.patch('/users' , async (req,res)=>{
+      const email = req.body.email;
+      const filter = { email : email}
+      const updateInfo ={
+        $set : {
+          lastSignInTime : req.body.lastSignInTime
+        }
+      }
+      const result = await usersCollection.updateOne(filter , updateInfo)
+      res.send(result)
+    })
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // await client.close();
